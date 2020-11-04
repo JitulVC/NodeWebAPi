@@ -5,8 +5,8 @@ const api = express();
 api.use(express.json());
 
 let grefresh_token = null;
-ACCESS_TOKEN_SECRET = '1889c7baa193f12dc63970fd17efa1791c264b6073d51cd9c42e8632b2ea29669cb7326479f3af1fcc4d6ae1e51a9ab60d326f7c2c6a52a0b2ba97bdf65798a0'
-REFRESH_TOKEN_SECRET = 'e9bc678c8eb0ee329899cb881cbfe8b7d54decb8a5bb3ecd6e70de3658d1823062007edbf314a22409cc168e76c22787ebe37fcd20f32a5664553cd372a6171b'
+ACCESS_TOKEN_SECRET = '1889c7baa193f12dc63970fd17efa1791c264b6073d51cd9c42e8632b2ea29669cb7326479f3af1fcc4d6ae1e51a9ab60d326f7c2c6a52a0b2ba97bdf65798a0';
+REFRESH_TOKEN_SECRET = 'e9bc678c8eb0ee329899cb881cbfe8b7d54decb8a5bb3ecd6e70de3658d1823062007edbf314a22409cc168e76c22787ebe37fcd20f32a5664553cd372a6171b';
 
 const stocks = [
     {
@@ -121,8 +121,8 @@ api.post('/login', (req,res) =>{
             res.send('User not found!');
         else{
             const user_detail = {name:user_name}; 
-            const access_token = jwt.sign(user_detail,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1m'});
-            const refresh_token = jwt.sign(user_detail,process.env.REFRESH_TOKEN_SECRET, {expiresIn: '2m'});
+            const access_token = jwt.sign(user_detail,ACCESS_TOKEN_SECRET,{expiresIn: '1m'});
+            const refresh_token = jwt.sign(user_detail,REFRESH_TOKEN_SECRET, {expiresIn: '2m'});
             grefresh_token = refresh_token;
             res.send({access_token:access_token, refresh_token: refresh_token});       
         }        
@@ -190,7 +190,7 @@ function authenticateToken(req, res, next){
         if (token == null) 
             res.sendStatus(401);
         
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user)=>{
+        jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user)=>{
             if (err) 
                 return res.sendStatus(403);
             req.user = user;
