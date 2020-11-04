@@ -111,17 +111,24 @@ api.get('/', (req,res) =>{
 });
 
 api.post('/login', (req,res) =>{
-    const { user_name } = req.body;
-    const { user_pwd } = req.body;
-    const user = users.find(c=> c.user_name == user_name && c.user_pwd == user_pwd);
-    if (!user)
-        res.send('User not found!');
-    else{
-        const user_detail = {name:user_name}; 
-        const access_token = jwt.sign(user_detail,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1m'});
-        const refresh_token = jwt.sign(user_detail,process.env.REFRESH_TOKEN_SECRET, {expiresIn: '2m'});
-        grefresh_token = refresh_token;
-        res.send({access_token:access_token, refresh_token: refresh_token});       
+    try{
+        const { user_name } = req.body;
+        const { user_pwd } = req.body;
+        const user = users.find(c=> c.user_name == user_name && c.user_pwd == user_pwd);
+        if (!user)
+            res.send('User not found!');
+        else{
+            const user_detail = {name:user_name}; 
+            const access_token = jwt.sign(user_detail,'mysecret',{expiresIn: '1m'});
+            const refresh_token = jwt.sign(user_detail,'mylastsecret', {expiresIn: '2m'});
+            //const access_token = jwt.sign(user_detail,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1m'});
+            //const refresh_token = jwt.sign(user_detail,process.env.REFRESH_TOKEN_SECRET, {expiresIn: '2m'});
+            grefresh_token = refresh_token;
+            res.send({access_token:access_token, refresh_token: refresh_token});       
+        }        
+    }
+    catch (err){
+        console.error(err.message);
     }
 });
 
