@@ -1,7 +1,10 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const api = express();
 api.use(express.json());
+
+let grefresh_token = null;
 
 const stocks = [
     {
@@ -90,11 +93,39 @@ const stocks = [
     }
 ];
 
+const users = [
+    {
+        id: 1,
+        user_name: 'sharon@abc.com',
+        user_pwd: '123456'
+    },
+    {
+        id: 2,
+        user_name: 'carol@abc.com',
+        user_pwd: '123456'
+    }
+];
+
 api.get('/', (req,res) =>{
     res.send('Welcome to webapi');
 });
 
-api.get('/stock', (req,res) =>{
+api.post('/login', (req,res) =>{
+    const { user_name } = req.body;
+    const { user_pwd } = req.body;
+    const user = users.find(c=> c.user_name == user_name && c.user_pwd == user_pwd);
+    if (!user)
+        res.send('User not found!');
+    else{
+        const user_detail = {name:user_name}; 
+        const access_token = jwt.sign(user_detail,process.env.ACCESS_TOKEN_SECRET,{expiresIn: '1m'});
+        const refresh_token = jwt.sign(user_detail,process.env.REFRESH_TOKEN_SECRET, {expiresIn: '2m'});
+        grefresh_token = refresh_token;
+        res.send({access_token:access_token, refresh_token: refresh_token});       
+    }
+});
+
+api.get('/stock', authenticateToken, (req,res) =>{
     res.send(stocks);
 });
 
@@ -141,6 +172,28 @@ api.delete('/stock/:id', (req,res) =>{
         res.send(stock);
     }
 });
+
+function authenticateToken(req, res, next){
+    try{
+        const authHeader = req.headers['authorization'];
+        if (authHeader == undefined && authHeader == null)
+            res.sendStatus(401);
+
+        const token = authHeader.split(' ')[1];
+        if (token == null) 
+            res.sendStatus(401);
+        
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user)=>{
+            if (err) 
+                return res.sendStatus(403);
+            req.user = user;
+            next();
+        });    
+    }
+    catch (err){
+        console.error(err.message);
+    }
+};
 
 const port = process.env.PORT || 3200;
 api.listen(port, ()=> console.log(`Server running on port ${port}...`));
